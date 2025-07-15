@@ -7,6 +7,7 @@ def main():
     print("=" * 50)
     print("Supported Features:")
     print("- Query Weather")
+    print("- GraphQL Data Queries")
     print("- Input 'quit' or 'exit' to quit")
     print("=" * 50)
     

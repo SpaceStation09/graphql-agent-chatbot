@@ -1,8 +1,10 @@
 import os 
+import asyncio
 from dotenv import load_dotenv
 from langgraph.graph import StateGraph, END
 from orchestrator import Orchestrator, AgentState
 from weather_agent import WeatherAgent
+from graphql_agent import ReactGraphQLAgent
 
 load_dotenv()
 
@@ -15,6 +17,7 @@ def create_chatbot():
     # init agents
     orchestrator = Orchestrator()
     weather_agent = WeatherAgent()
+    graphql_agent = ReactGraphQLAgent()
     
     # create state graph
     workflow = StateGraph(AgentState)
@@ -22,6 +25,7 @@ def create_chatbot():
     # add nodes
     workflow.add_node("orchestrator", orchestrator.route_query)
     workflow.add_node("weather_agent", weather_agent.process_query)
+    workflow.add_node("graphql_agent", graphql_agent.run)
     workflow.add_node("format_response", orchestrator.format_response)
     
     # set entry point
@@ -33,12 +37,14 @@ def create_chatbot():
         orchestrator.should_continue,
         {
             "weather_agent": "weather_agent",
+            "graphql_agent": "graphql_agent",
             "end": "format_response"
         }
     )
     
     # add edges from expert agents to end
     workflow.add_edge("weather_agent", "format_response")
+    workflow.add_edge("graphql_agent", "format_response")
     workflow.add_edge("format_response", END)
     
     # compile graph
@@ -46,8 +52,8 @@ def create_chatbot():
     
     return app
 
-def process_user_input(user_query: str) -> str:
-    """process user input and return response"""
+async def process_user_input_async(user_query: str) -> str:
+    """异步处理用户输入并返回响应"""
     app = create_chatbot()
     
     # create initial state
@@ -59,6 +65,10 @@ def process_user_input(user_query: str) -> str:
     }
     
     # run graph
-    result = app.invoke(initial_state)
+    result = await app.ainvoke(initial_state)
     
     return result["agent_response"]
+
+def process_user_input(user_query: str) -> str:
+    """同步包装器，用于处理用户输入"""
+    return asyncio.run(process_user_input_async(user_query))

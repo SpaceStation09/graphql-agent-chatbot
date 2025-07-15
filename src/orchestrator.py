@@ -29,6 +29,7 @@ class Orchestrator:
 
             可用的agents:
             1. weather_agent: 处理天气查询，当用户询问某地天气时使用
+            2. graphql_agent: 处理GraphQL数据查询，当用户询问数据库、API数据或需要查询结构化数据时使用。目前你只能提供web3.bio数据的查询，web3.bio提供了用户web3身份和web2身份的图谱，可以根据用户某个平台的身份，去查询其其他身份。这些身份包括但不限于ens，链上地址，farcaster账号，lens账号等等。
 
             你的任务:
             1. 分析用户查询
@@ -37,6 +38,7 @@ class Orchestrator:
 
             示例输出:
             {{"agent_name": "weather_agent"}}
+            {{"agent_name": "graphql_agent"}}
 
             如果查询不匹配任何agent，返回: {{"agent_name": "none"}}
             """),
@@ -71,6 +73,8 @@ class Orchestrator:
         
         if current_agent == "weather_agent":
             return "weather_agent"
+        elif current_agent == "graphql_agent":
+            return "graphql_agent"
         else:
             return "end"
 
