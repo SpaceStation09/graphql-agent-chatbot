@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """
-测试异步修复的脚本
+Simple test script for the GraphQL Agent
 """
 
 import asyncio
-import os
 from dotenv import load_dotenv
 from src.graphql_agent import ReactGraphQLAgent, AgentState
 
@@ -14,15 +13,15 @@ async def test_graphql_agent():
     print("测试GraphQL Agent...")
     
     try:
-        # 创建agent实例
+        # Create agent instance
         agent = ReactGraphQLAgent()
-        print("✓ Agent实例创建成功")
+        print("✓ Agent instance created successfully")
         
-        # 测试异步初始化
+        # Test asynchronous initialization
         await agent._initialize()
-        print("✓ 初始化成功")
+        print("✓ Initialization successful")
         
-        # 测试运行
+        # Test run
         test_state = AgentState(
             messages=[],
             current_agent="graphql_agent",
@@ -35,27 +34,27 @@ async def test_graphql_agent():
         )
         
         result = await agent.run(test_state)
-        print("✓ Agent运行成功")
-        print(f"响应: {result['agent_response']}")
+        print("✓ Agent run successfully")
+        print(f"Response: {result['agent_response']}")
         
     except Exception as e:
-        print(f"✗ 测试失败: {e}")
+        print(f"✗ Test failed: {e}")
         return False
     
     return True
 
 async def main():
-    """主测试函数"""
-    print("开始测试...")
+    """Main test function"""
+    print("Starting test...")
     print("=" * 50)
     
     success = await test_graphql_agent()
     
     print("=" * 50)
     if success:
-        print("✓ 所有测试通过！")
+        print("✓ All tests passed!")
     else:
-        print("✗ 测试失败，需要进一步调试。")
+        print("✗ Test failed, need further debugging.")
 
 if __name__ == "__main__":
     asyncio.run(main()) 
