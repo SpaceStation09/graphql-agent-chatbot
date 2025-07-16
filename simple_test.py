@@ -11,8 +11,7 @@ from src.graphql_agent import ReactGraphQLAgent, AgentState
 load_dotenv()
 
 async def test_graphql_agent():
-    """测试GraphQL agent的异步初始化"""
-    print("测试GraphQL Agent异步初始化...")
+    print("测试GraphQL Agent...")
     
     try:
         # 创建agent实例
@@ -27,7 +26,7 @@ async def test_graphql_agent():
         test_state = AgentState(
             messages=[],
             current_agent="graphql_agent",
-            user_query="我现在有一个ens的信息，他的名称是sujiyan.eth，请帮我查他的身份信息",
+            user_query="query the identity of sujiyan.eth",
             agent_response="",
             endpoint_url="https://graph.web3.bio/graphql",
             graphql_query=None,
@@ -47,14 +46,14 @@ async def test_graphql_agent():
 
 async def main():
     """主测试函数"""
-    print("开始测试异步修复...")
+    print("开始测试...")
     print("=" * 50)
     
     success = await test_graphql_agent()
     
     print("=" * 50)
     if success:
-        print("✓ 所有测试通过！异步修复成功。")
+        print("✓ 所有测试通过！")
     else:
         print("✗ 测试失败，需要进一步调试。")
 
