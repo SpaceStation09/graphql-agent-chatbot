@@ -6,7 +6,9 @@ from typing import List, TypedDict, Annotated, Optional, Dict, Any
 from dotenv import load_dotenv
 from langchain.schema import BaseMessage
 from langchain_openai import ChatOpenAI
-from langchain.agents import create_react_agent, AgentExecutor
+from langchain.agents import AgentExecutor
+from langgraph.prebuilt import create_react_agent
+from langchain.schema import HumanMessage, SystemMessage, AIMessage
 from langchain.prompts import ChatPromptTemplate
 from langchain_mcp_adapters.client import MultiServerMCPClient
 
@@ -53,8 +55,22 @@ class ReactGraphQLAgent:
             
         self.tools = await self.client.get_tools()
 
-        prompt_expert = ChatPromptTemplate.from_messages([
-            ("system", """
+        
+        # Create ReAct agent
+        self.agent = create_react_agent(
+            model=self.llm,
+            tools=self.tools,
+        )
+        
+        self._initialized = True
+
+    async def run(self, state: AgentState) -> AgentState:
+        try:
+            # Ensure initialized
+            await self._initialize()
+
+            
+            system_prompt = """
               You are a helpful data assistant that translates natural language questions into GraphQL queries. 
               You could use the tools provided to get the query schema which can help you build the query statement.
               
@@ -67,41 +83,19 @@ class ReactGraphQLAgent:
               
               Be precise and focused in your responses.
               
-              Available tools: {tools}
-              Tool names: {tool_names}
-            """),
-            ("human", "{{input}}"),
-            ("ai", "{agent_scratchpad}")
-        ])
-        
-        # Create ReAct agent
-        self.agent = create_react_agent(
-            llm=self.llm,
-            tools=self.tools,
-            prompt=prompt_expert
-        )
-        
-        # Create agent executor
-        self.agent_executor = AgentExecutor(
-            agent=self.agent,
-            tools=self.tools,
-            verbose=True,
-            handle_parsing_errors=True
-        )
-        
-        self._initialized = True
+            """
 
-    async def run(self, state: AgentState) -> AgentState:
-        try:
-            # Ensure initialized
-            await self._initialize()
+            initial_msg = [
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=state["user_query"])
+            ]
             
             # Use agent executor to process query
-            result = self.agent_executor.invoke({
-                "input": state["user_query"]
+            result = await self.agent.ainvoke({
+                "messages": initial_msg
             })
-            
-            state["agent_response"] = result["output"]
+            messages = result["messages"]
+            state["agent_response"] = next((msg for msg in reversed(messages) if isinstance(msg, AIMessage)), None)
             
         except Exception as e:
             error_msg = f"处理查询时发生错误: {str(e)}"

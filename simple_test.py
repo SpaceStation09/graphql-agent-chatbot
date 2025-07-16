@@ -20,13 +20,13 @@ async def test_graphql_agent():
         
         # 测试异步初始化
         await agent._initialize()
-        print("✓ 异步初始化成功")
+        print("✓ 初始化成功")
         
         # 测试运行
         test_state = AgentState(
             messages=[],
             current_agent="graphql_agent",
-            user_query="query the identity of sujiyan.eth",
+            user_query="query the identity of sujiyan.eth on web3.bio",
             agent_response="",
             endpoint_url="https://graph.web3.bio/graphql",
             graphql_query=None,
