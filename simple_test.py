@@ -27,7 +27,7 @@ async def test_graphql_agent():
         test_state = AgentState(
             messages=[],
             current_agent="graphql_agent",
-            user_query="查询一些数据",
+            user_query="我现在有一个ens的信息，他的名称是sujiyan.eth，请帮我查他的身份信息",
             agent_response="",
             endpoint_url="https://graph.web3.bio/graphql",
             graphql_query=None,
