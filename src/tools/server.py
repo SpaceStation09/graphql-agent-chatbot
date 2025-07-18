@@ -7,6 +7,7 @@ from query import INTROSPECTION_QUERY, IDENTITY_QUERY
 from dotenv import load_dotenv
 from typing import Annotated, Dict
 from schema import SchemaInfo
+
 load_dotenv()
 
 mcp = FastMCP(name="relate-account")
@@ -39,39 +40,6 @@ def execute_graphql_query(query_obj: dict, url: str, timeout: int = 10000) -> di
 		return json_data.get("data", {})
 	except Exception as e:
 		return {"error": f"Query failed: {e}"}
-	
-@mcp.tool(
-	name="discover-query-schema",
-	description="Discover the query schema for the given endpoint, the given endpoint is provided by web3.bio which is used as a crypto-related identity graph service provider. Users can use web3.bio to query all identity information of a specific platform identity. You should first use this tool to discover the query schema for the given endpoint to help build the query statement before you execute the query.",
-)
-def discover_query_schema() -> str:
-	query_obj = {
-		"query": INTROSPECTION_QUERY,
-	}
-	data = execute_graphql_query(query_obj, url)
-	schemas["web3.bio"] = SchemaInfo("web3.bio", url, data)
-	return str(data)
-
-@mcp.tool(
-	name="analyze-schema",
-	description="Analyze the schema of the given endpoint, the given endpoint is provided by web3.bio which is used as a crypto-related identity graph service provider. This tool will be used to parse the fetched schema data and formalize it into a standard format for future use (etc. build query statement and execute the query).",
-)
-def analyze_schema() -> str:
-	schema_info = schemas["web3.bio"]
-
-	types = schema_info.schema.get("__schema", {}).get("types", [])
-	# Filter out internal types
-	filtered_types = [t for t in types if not t.get("name", "").startswith("__")]
-	
-	analysis = {
-		"schema_name": "web3.bio",
-		"endpoint": schema_info.endpoint,
-		"type_count": len(filtered_types),
-		"object_types": [t.get("name") for t in filtered_types if t.get("kind") == "OBJECT"],
-		"scalar_types": [t.get("name") for t in filtered_types if t.get("kind") == "SCALAR"],
-		"enum_types": [t.get("name") for t in filtered_types if t.get("kind") == "ENUM"],
-	}
-	return str(analysis)
 
 @mcp.tool(
 	name="execute-query",

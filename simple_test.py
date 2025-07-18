@@ -25,7 +25,7 @@ async def test_graphql_agent():
         test_state = AgentState(
             messages=[],
             current_agent="graphql_agent",
-            user_query="query the identity of sujiyan.eth on web3.bio",
+            user_query="query the ethereum address of sujiyan.eth on web3.bio",
             agent_response="",
             endpoint_url="https://graph.web3.bio/graphql",
             graphql_query=None,

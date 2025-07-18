@@ -7,6 +7,8 @@ from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from langchain.schema import HumanMessage, SystemMessage, AIMessage
 from langchain_mcp_adapters.client import MultiServerMCPClient
+import json
+
 
 load_dotenv()
 
@@ -54,6 +56,7 @@ class ReactGraphQLAgent:
         
         # Create ReAct agent
         self.agent = create_react_agent(
+            # TODO: temperature low
             model=self.llm,
             tools=self.tools,
         )
@@ -65,17 +68,37 @@ class ReactGraphQLAgent:
             # Ensure initialized
             await self._initialize()
 
+            with open("src/schema.json", "r", encoding="utf-8") as f:
+                schema_data = json.load(f).get("data", {})
+
+            types = schema_data.get("__schema", {}).get("types", [])
+            # Filter out internal types
+            filtered_types = [t for t in types if not t.get("name", "").startswith("__")]
             
+            analysis = {
+                "schema_name": "web3.bio",
+                "endpoint": GRAPHQL_ENDPOINT,
+                "type_count": len(filtered_types),
+                "object_types": [t.get("name") for t in filtered_types if t.get("kind") == "OBJECT"],
+                "scalar_types": [t.get("name") for t in filtered_types if t.get("kind") == "SCALAR"],
+                "enum_types": [t.get("name") for t in filtered_types if t.get("kind") == "ENUM"],
+            }
+
+            # 1. return json rather than a summary
+            # 2. explain the identity terminology
             system_prompt = """
               You are a helpful data assistant that translates natural language questions into GraphQL queries. 
-              You could use the tools provided to get the query schema which can help you build the query statement.
+              The query schema (analyzed and formatted in advanced) is as follows:
+              {{analysis}}
               
               You should:
                 1. Understand what data the user is asking for
                 2. Create a GraphQL query to retrieve that information
                 3. Execute the query and present the results
 
-              all above steps could be done with the tools provided.
+              all above steps could be done with the tools provided. if user is asking the identity info on web3.bio, you should use the given tool
+
+              Pay attention to the enum types, you should pass the exact enum value instead of the string. e.g. if the enum type is ens, you should pass ens instead of the string "ens".
               
               Be precise and focused in your responses.
               
