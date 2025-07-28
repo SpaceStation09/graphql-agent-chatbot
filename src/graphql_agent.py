@@ -89,11 +89,56 @@ class ReactGraphQLAgent:
             The query schema (analyzed and formatted in advanced) is as follows:
             {{analysis}}
 
+            About web3.bio graphql query endpoint, you should know:
+            - Every user can be described by an identity graph, which is a network structure of web2 and web3 identities.
+            - Each node in the identity graph is a web2 or web3 identity identity record. 
+                - When user wants to query the single identity info, you could query the `profile` field of the identity; 
+                - If user wants to query all the identities of a user (identities across different platforms), you could query the `identityGraph` field of the user. This describes the whole identity graph of the user.
+                - Each `IdentityGraph` fields contains a list of identity records (corresponding to the `vertices`). Attention here, you'd better keep it constant between the `vertices` query field and `profile` fields. For example:
+
+                When user wants to query all the identities of "sujiyan.eth", you'd better query like this:
+                 ```graphql
+                query {
+                    identity(platform: ens, identity: "sujiyan.eth") {
+                        id
+                        status
+                        aliases
+                        profile {
+                            identity
+                            address
+                            displayName
+                            avatar
+                            texts
+                            description
+                            addresses {
+                                address
+                                network
+                            }
+                        }
+                        identityGraph {
+                            graphId
+                            vertices {
+                                identity
+                                address
+                                displayName
+                                avatar
+                                texts
+                                description
+                                addresses {
+                                    address
+                                    network
+                                }
+                            }
+                        }
+                    }
+                }
+                ```
+
             Data source:
             - Web2 Identity: social media accounts (e.g. twitter, instagram, personal website, github and etc.), personal contact info (e.g. email, location and etc.)
             - Web3 Identity: Onchain naming system on different blockchains (e.g. ENS, Lens, unstoppable domains, Solana name service etc.), web3 social media accounts (e.g. Lens, farcaster, etc.)
         
-            The above always used as the param "platform" value. For example:
+            The above always used as the param "platform" value.
 
             User query: "show me the identity profile of sujiyan.eth?"
             You:
@@ -110,6 +155,7 @@ class ReactGraphQLAgent:
                         address
                         displayName
                         avatar
+                        texts
                         description
                         addresses {
                             address
@@ -120,14 +166,18 @@ class ReactGraphQLAgent:
             }
             ```
 
+            
+
             You should:
             1. Understand what data the user is asking for, and what info you are given.
             2. Use the given query schema to generate a valid GraphQL query statement
             3. Execute the query and directly present the query results
 
-            all above steps could be done with the tools provided. if user is asking the identity info on web3.bio, you should use the given tool
+            all above steps could be done with the tools provided. if user is asking the identity info on web3.bio, you should use the given tool.
 
-            Pay attention to the enum types, you should pass the exact enum value instead of the string. e.g. if the enum type is ens, you should pass ens instead of the string "ens".
+            Here are some hints for you while generating the GraphQL query statement:
+            1. Pay attention to the enum types, you should pass the exact enum value instead of the string. e.g. if the enum type is ens, you should pass ens instead of the string "ens".
+            2. When user doesn't clarify the specific field to query, you'd better contains the `profile` field and some other real identity-related plain text fields. e.g. `displayName`, `texts`, `description`, `addresses` and etc. The fields like "graphId", "updatedAt", "registeredAt" and etc. are not real identity-related fields.
             
             Be precise and focused in your responses.
             """
