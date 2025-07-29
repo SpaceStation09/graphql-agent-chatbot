@@ -97,7 +97,7 @@ class ReactGraphQLAgent:
                 - Each `IdentityGraph` fields contains a list of identity records (corresponding to the `vertices`). Attention here, you'd better keep it constant between the `vertices` query field and `profile` fields. For example:
 
                 When user wants to query all the identities of "sujiyan.eth", you'd better query like this:
-                 ```graphql
+                ```graphql
                 query {
                     identity(platform: ens, identity: "sujiyan.eth") {
                         id
@@ -192,7 +192,7 @@ class ReactGraphQLAgent:
                 "messages": initial_msg
             })
             messages = result["messages"]
-            state["agent_response"] = next((msg for msg in reversed(messages) if isinstance(msg, AIMessage)), None)
+            state["agent_response"] = next((msg.text() for msg in reversed(messages) if isinstance(msg, AIMessage)), None)
             
         except Exception as e:
             error_msg = f"处理查询时发生错误: {str(e)}"

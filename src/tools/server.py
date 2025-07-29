@@ -3,7 +3,6 @@ from pydantic import Field
 import requests
 import os
 from platforms import Platform
-from query import INTROSPECTION_QUERY, IDENTITY_QUERY
 from dotenv import load_dotenv
 from typing import Annotated, Dict
 from schema import SchemaInfo
